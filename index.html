@@ -15,14 +15,14 @@
                 height: 30px;
                 background-color: #ddd;
             }
-
+            
             #progress {
                 position: absolute;
                 width: 0%;
                 height: 100%;
                 background-color: #4CAF50;
             }
-
+            
 			div.floating {
 				color : #ffffff;
 				background : #000000;
@@ -65,83 +65,82 @@
         <!--script src="/three.js/examples/js/libs/stats.min.js"></script-->
         
         <script src="/fileEater.js"></script>
-
+        
         <script>
-
-            if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
-
+        
+            if (! Detector.webgl) Detector.addGetWebGLMessage();
+            
             var container, stats;
             var raycaster, INTERSECTED, mouse = new THREE.Vector2();
             var camera, cameraTarget, scene, renderer, controls;
             var floatingDiv;
             var progress, progressPercentage;
-
+            
             init();
             animate();
-
+            
             function init() {
-
-                container = document.createElement( 'div' );
-                document.body.appendChild( container );
-
-                camera = new THREE.PerspectiveCamera( 35, window.innerWidth / window.innerHeight, 1, 150 );
-                camera.position.set( 40, 0, 0 );
-                cameraTarget = new THREE.Vector3( 0, 0, 0 );
+            
+                container = document.createElement('div');
+                document.body.appendChild(container);
+                
+                camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 150);
+                camera.position.set(40, 0, 0);
+                cameraTarget = new THREE.Vector3(0, 0, 0);
                 
                 scene = new THREE.Scene();
                 raycaster = new THREE.Raycaster();
-
+                
                 // Lights
-
-                scene.add( new THREE.HemisphereLight( 0x443333, 0x111122 ) );
-
-                addShadowedLight( 1, 1, 1, 0xffffff, 1.35 );
-                addShadowedLight( 0.5, 1, -1, 0xffaa00, 1 );
+                
+                scene.add(new THREE.HemisphereLight(0x443333, 0x111122));
+                
+                addShadowedLight(1, 1, 1, 0xffffff, 1.35);
+                addShadowedLight(0.5, 1, -1, 0xffaa00, 1);
                 // renderer
-
-                renderer = new THREE.WebGLRenderer( { antialias: true } );
-                //renderer.setClearColor( scene.fog.color );
-                renderer.setPixelRatio( window.devicePixelRatio );
-                renderer.setSize( window.innerWidth, window.innerHeight );
-
+                
+                renderer = new THREE.WebGLRenderer({ antialias: true });
+                //renderer.setClearColor(scene.fog.color);
+                renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                
                 renderer.gammaInput = true;
                 renderer.gammaOutput = true;
-
+                
                 renderer.shadowMap.enabled = true;
                 renderer.shadowMap.renderReverseSided = false;
-
-                container.appendChild( renderer.domElement );
+                
+                container.appendChild(renderer.domElement);
                 
                 // Controls
                 
-                controls = new THREE.OrbitControls( camera, renderer.domElement );
-				controls.target.set( 0, 1, 0 );
+                controls = new THREE.OrbitControls(camera, renderer.domElement);
+				controls.target.set(0, 1, 0);
 				controls.update();
                 
                 // stats
-
                 //stats = new Stats();
-                //container.appendChild( stats.dom );
-
+                //container.appendChild(stats.dom);
+                
                 //
                 progress = document.getElementById("progress");
                 
-                var saveButton = document.getElementById( 'saveButton' );
-				saveButton.addEventListener( 'click', saveToDisk);
-                var saveButton2 = document.getElementById( 'saveButton2' );
-				saveButton2.addEventListener( 'click', saveToDisk2);
+                var saveButton = document.getElementById('saveButton');
+				saveButton.addEventListener('click', saveToDisk);
+                var saveButton2 = document.getElementById('saveButton2');
+				saveButton2.addEventListener('click', saveToDisk2);
                 
-                var exportButton = document.getElementById( 'exportButton' );
-				exportButton.addEventListener( 'click', exportToObj);
+                var exportButton = document.getElementById('exportButton');
+				exportButton.addEventListener('click', exportToObj);
                 
-				floatingDiv = document.createElement( 'div' );
+				floatingDiv = document.createElement('div');
 				floatingDiv.className = 'floating';
-				document.body.appendChild( floatingDiv );
+				document.body.appendChild(floatingDiv);
                 
-                window.addEventListener( 'resize', onWindowResize, false );
-				window.addEventListener( 'mousewheel', onMouseWheel, false );
-				window.addEventListener( 'MozMousePixelScroll', onMouseWheel, false );
-                document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+                window.addEventListener('resize', onWindowResize, false);
+				window.addEventListener('mousewheel', onMouseWheel, false);
+				window.addEventListener('MozMousePixelScroll', onMouseWheel, false);
+                document.addEventListener('mousemove', onDocumentMouseMove, false);
                 
                 //uploadFile.onchange = function() { appendFile (); };
             }
@@ -149,39 +148,39 @@
             function saveToDisk2() {
             
 				var exporter = new THREE.STLExporter();
-				var data = exporter.parse( scene );
+				var data = exporter.parse(scene);
                 
                 var XHR = new XMLHttpRequest();
                 var urlEncodedData = "";
                 var urlEncodedDataPairs = [];
                 var name;
-
+                
                 // We turn the data object into an array of URL encoded key value pairs.
                 for(name in data) {
                     urlEncodedDataPairs.push(encodeURIComponent(name) + '=' + encodeURIComponent(data[name]));
                 }
-
+                
                 // We combine the pairs into a single string and replace all encoded spaces to 
                 // the plus character to match the behaviour of the web browser form submit.
                 urlEncodedData = urlEncodedDataPairs.join('&').replace(/%20/g, '+');
-
+                
                 // We define what will happen if the data is successfully sent
                 XHR.addEventListener('load', function(event) {
                     alert('Yeah! Data sent and response loaded.');
                 });
-
+                
                 // We define what will happen in case of error
                 XHR.addEventListener('error', function(event) {
                     alert('Oups! Something goes wrong.');
                 });
-
+                
                 // We setup our request
                 XHR.open('POST', '/save');
-
+                
                 // We add the required HTTP header to handle a form data POST request
                 XHR.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
                 //XHR.setRequestHeader('Content-Length', urlEncodedData.length);
-
+                
                 console.log(XHR);
                 // And finally, We send our data.
                 //XHR.send(urlEncodedData);
@@ -191,7 +190,7 @@
             function saveToDisk() {
             
 				var exporter = new THREE.STLExporter();
-				var result = exporter.parse( scene );
+				var result = exporter.parse(scene);
                 
                 var saveForm = document.createElement("form");
                 saveForm.setAttribute("method", "post");
@@ -211,9 +210,9 @@
             function exportToObj() {
 
 				var exporter = new THREE.STLExporter();
-				var result = exporter.parse( scene );
+				var result = exporter.parse(scene);
 				floatingDiv.style.display = 'block';
-				floatingDiv.innerHTML = result.split( '\n' ).join ( '<br />' );
+				floatingDiv.innerHTML = result.split('\n').join ('<br />');
                 
                 var dataURI = "data:application/octet-stream," + result;
                 var createA = document.createElement('a');
@@ -260,45 +259,44 @@
                 console.log('>>> res:', res);
                 
                 var loader = new THREE.STLLoader();
-                loader.load( res.filename, function ( geometry ) {
-
-                    var material = new THREE.MeshPhongMaterial( { color: 0xFFFFFF, specular: 0x111111, shininess: 200 } );
-                    var mesh = new THREE.Mesh( geometry, material );
-
-                    mesh.position.set( 0, 0, 0 );
-                    mesh.scale.set( 0.3, 0.3, 0.3 );
-
+                loader.load(res.filename, function (geometry) {
+                
+                    var material = new THREE.MeshPhongMaterial({ color: 0xFFFFFF, specular: 0x111111, shininess: 200 });
+                    var mesh = new THREE.Mesh(geometry, material);
+                    
+                    mesh.position.set(0, 0, 0);
+                    mesh.scale.set(0.3, 0.3, 0.3);
+                    
                     mesh.castShadow = true;
                     mesh.receiveShadow = true;
-
-                    scene.add( mesh );
+                    
+                    scene.add(mesh);
                     progressPercentage = 100;
                     progress.style.width = progressPercentage + '%';
-                } );
+                });
             }
             
-            function addShadowedLight( x, y, z, color, intensity ) {
-
-                var directionalLight = new THREE.DirectionalLight( color, intensity );
-                directionalLight.position.set( x, y, z );
-                scene.add( directionalLight );
-
+            function addShadowedLight(x, y, z, color, intensity) {
+            
+                var directionalLight = new THREE.DirectionalLight(color, intensity);
+                directionalLight.position.set(x, y, z);
+                scene.add(directionalLight);
+                
                 directionalLight.castShadow = true;
-
+                
                 var d = 1;
                 directionalLight.shadow.camera.left = -d;
                 directionalLight.shadow.camera.right = d;
                 directionalLight.shadow.camera.top = d;
                 directionalLight.shadow.camera.bottom = -d;
-
+                
                 directionalLight.shadow.camera.near = 1;
                 directionalLight.shadow.camera.far = 4;
-
+                
                 directionalLight.shadow.mapSize.width = 1024;
                 directionalLight.shadow.mapSize.height = 1024;
-
+                
                 directionalLight.shadow.bias = -0.005;
-
             }
             
             function onDocumentMouseMove(event) {
@@ -310,62 +308,59 @@
             }
             
             function onWindowResize() {
-
+            
                 camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
 
-                renderer.setSize( window.innerWidth, window.innerHeight );
-
+                renderer.setSize(window.innerWidth, window.innerHeight);
             }
             
 			function onMouseWheel(event) {
 				var amount = -event.wheelDeltaY || event.detail;
-				if ( amount === 0 ) return;
+				if (amount === 0) return;
 				var dir = amount / Math.abs(amount);
 				zoomspeed = dir/10;
-
+                
 				// Slow down default zoom speed after user starts zooming, to give them more control
 				minzoomspeed = 0.001;
 			}
-
+            
             function animate() {
-
-                requestAnimationFrame( animate );
-
+            
+                requestAnimationFrame(animate);
+                
                 render();
                 //stats.update();
-
             }
-
+            
             function render() {
-
-                camera.lookAt( cameraTarget );
-
+            
+                camera.lookAt(cameraTarget);
+                
                 // find intersections
                 raycaster.setFromCamera(mouse, camera);
                 var intersects = raycaster.intersectObjects(scene.children);
                 
                 if (intersects.length > 0) {
-
+                
                     if (INTERSECTED != intersects[0].object) {
-
+                    
                         if (INTERSECTED)
                             INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
-
+                            
                         INTERSECTED = intersects[0].object;
                         INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
                         INTERSECTED.material.emissive.setHex(0xff0000);
                     }
                     
                 } else {
-                
+                    
                     if (INTERSECTED) INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
                     INTERSECTED = null;
                 }
                 
-                renderer.render( scene, camera );
+                renderer.render(scene, camera);
             }
-
         </script>
     </body>
 </html>
