@@ -71,7 +71,7 @@
             if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
             var container, stats;
-
+            var raycaster, INTERSECTED, mouse = new THREE.Vector2();
             var camera, cameraTarget, scene, renderer, controls;
             var floatingDiv;
             var progress, progressPercentage;
@@ -86,10 +86,10 @@
 
                 camera = new THREE.PerspectiveCamera( 35, window.innerWidth / window.innerHeight, 1, 150 );
                 camera.position.set( 40, 0, 0 );
-
                 cameraTarget = new THREE.Vector3( 0, 0, 0 );
-
+                
                 scene = new THREE.Scene();
+                raycaster = new THREE.Raycaster();
 
                 // Lights
 
@@ -141,6 +141,7 @@
                 window.addEventListener( 'resize', onWindowResize, false );
 				window.addEventListener( 'mousewheel', onMouseWheel, false );
 				window.addEventListener( 'MozMousePixelScroll', onMouseWheel, false );
+                document.addEventListener( 'mousemove', onDocumentMouseMove, false );
                 
                 //uploadFile.onchange = function() { appendFile (); };
             }
@@ -299,7 +300,15 @@
                 directionalLight.shadow.bias = -0.005;
 
             }
-
+            
+            function onDocumentMouseMove(event) {
+            
+                event.preventDefault();
+                
+                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+            }
+            
             function onWindowResize() {
 
                 camera.aspect = window.innerWidth / window.innerHeight;
@@ -332,8 +341,29 @@
 
                 camera.lookAt( cameraTarget );
 
-                renderer.render( scene, camera );
+                // find intersections
+                raycaster.setFromCamera(mouse, camera);
+                var intersects = raycaster.intersectObjects(scene.children);
+                
+                if (intersects.length > 0) {
 
+                    if (INTERSECTED != intersects[0].object) {
+
+                        if (INTERSECTED)
+                            INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
+
+                        INTERSECTED = intersects[0].object;
+                        INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+                        INTERSECTED.material.emissive.setHex(0xff0000);
+                    }
+                    
+                } else {
+                
+                    if (INTERSECTED) INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
+                    INTERSECTED = null;
+                }
+                
+                renderer.render( scene, camera );
             }
 
         </script>
